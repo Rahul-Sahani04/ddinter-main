@@ -31,7 +31,8 @@ export default async function handler(req, res, next) {
       (a, b) => level_to_int[a["Level"]] - level_to_int[b["Level"]]
     );
 
-    // console.log(interactionsList);
+
+    console.log(interactionsList);
 
     return res.status(200).json({ interactions: interactionsList });
   }

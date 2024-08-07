@@ -5,16 +5,16 @@ import DrugItem from "@/components/DrugItem";
 import MyTextInput from "@/components/MyTextInput";
 import InteractionTable from "@/components/InterationTable";
 import MyLoader from "@/components/MyLoader";
-import styles from "@/styles/Header.module.css"
+import styles from "@/styles/Header.module.css";
 
 const INTERACTION_EXAMPLE = [
-  {id: 1, name: "Aluminum hydroxide"},
-  {id: 2, name: "Dolutegravir"},
-  {id: 3, name: "Aprepitant"},
-  {id: 4, name: "Abacavir"},
-  {id: 5, name: "Orlistat"},
-  {id: 6, name: "Dexamethasone"},
-]
+  { id: 1, name: "Aluminum hydroxide" },
+  { id: 2, name: "Dolutegravir" },
+  { id: 3, name: "Aprepitant" },
+  { id: 4, name: "Abacavir" },
+  { id: 5, name: "Orlistat" },
+  { id: 6, name: "Dexamethasone" },
+];
 
 export default function Home() {
   const [id, setId] = useState(0);
@@ -22,11 +22,37 @@ export default function Home() {
   const [interactionTable, setInteractionTable] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [searchResults, setSearchResults] = useState([]);
+
+  const [drugName, setDrugName] = useState("");
+
+  const fetchDrugName = async (drugName) => {
+    try {
+      const result = await fetch(`${server}/api/getSimilarDrugs`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          drugName: drugName,
+        }),
+      });
+
+      const res = await result.json();
+      console.log("Similar Drugs: ", res.similarDrugs[0].similarDrugs);
+      setSearchResults(res.similarDrugs[0].similarDrugs);
+    } catch (error) {
+      console.log("Error occured: ", error);
+    }
+  };
+
   const submitList = async () => {
     setIsLoading(true);
 
     // To api call
     try {
+      console.log("Server: ", server);
       const result = await fetch(`${server}/api/getInteraction`, {
         method: "POST",
         headers: {
@@ -64,11 +90,11 @@ export default function Home() {
 
   const handleResetClick = () => {
     setDrugList([]);
-  }
+  };
 
   const handleLoadExampleClick = () => {
     setDrugList(INTERACTION_EXAMPLE);
-  }
+  };
 
   return (
     <main className="col container mb-5 mt-3">
@@ -86,16 +112,49 @@ export default function Home() {
                   name="name"
                   type="text"
                   placeholder="Enter Drug Name"
+                  // onchange search for drug name in database
+                  value={drugName}
+                  onChange={(e) => {
+                    e.preventDefault();
+                    setDrugName(e.target.value);
+                    console.log("Searching for drug name");
+                    fetchDrugName(e.target.value);
+                  }}
                 />
+
+                {searchResults.length !== 0 && (
+                  <ul className="list-group">
+                    {searchResults.map((drug, index) => (
+                      <li
+                        key={index}
+                        className="list-group-item"
+                        onClick={() => {
+                          setDrugName(drug);
+                          setSearchResults([]);
+                        }}
+                      >
+                        {drug}
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
                 <div className="col-12 ms-5 mt-3">
                   <button type="submit" className="btn btn-primary">
                     Add Drug
                   </button>
-                  <button type="button" className="btn btn-primary mx-2" onClick={handleResetClick}>
+                  <button
+                    type="button"
+                    className="btn btn-primary mx-2"
+                    onClick={handleResetClick}
+                  >
                     Reset List
                   </button>
-                  <button type="button" className="btn btn-primary" onClick={handleLoadExampleClick}>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleLoadExampleClick}
+                  >
                     Load Example
                   </button>
                 </div>
@@ -114,13 +173,13 @@ export default function Home() {
       <div className="d-flex justify-content-center my-3">
         <button className="btn btn-primary px-3" onClick={submitList}>
           Check Interactions
+          
         </button>
       </div>
 
       <div className="d-flex justify-content-center">
         {isLoading && <MyLoader />}
       </div>
-      
 
       {!isLoading && interactionTable.length !== 0 && (
         <InteractionTable interactionTable={interactionTable} />
@@ -128,7 +187,8 @@ export default function Home() {
 
       {!isLoading && interactionTable.length !== 0 && (
         <div className="alert alert-warning mt-3" role="alert">
-          *Note: <b className="fw-bold">
+          *Note:{" "}
+          <b className="fw-bold">
             Unknown interaction means there might be an interaction between the
             drugs but with unknown severity.
           </b>

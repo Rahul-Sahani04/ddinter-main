@@ -4,6 +4,8 @@
 
 This Next.js project website is designed to help users find the interaction between drugs by providing information about the medications they are taking. You can find the website link in About section of the github repo or just click [here](https://ddinter-main.vercel.app/). In order to fill the DB, I used python version of mongoDB client from which I read the data csvs, made dataframes and then uploaded the entries to mongoDB.
 
+
+
 ### Getting Started
 
 To get started, clone the project repository and run `npm install` in the root directory to install all dependencies. Then run `npm run dev` to start the development server. The website will be available at `http://localhost:3000.`
