@@ -10,7 +10,7 @@ import styles from "@/styles/Header.module.css";
 import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DrugListTable from "@/components/DrugList";
 

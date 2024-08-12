@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { Button } from "@/components/ui/Button"
+import { Button } from "@/components/ui/button"
 
 const DrugListTable = ({ drugList, onDeleteHandler }) => {
   return (
