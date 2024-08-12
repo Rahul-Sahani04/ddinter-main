@@ -14,6 +14,9 @@ export default async function handler(req, res, next) {
           .collection("interactions")
           .find({ Drug_A: drugList[i]["name"], Drug_B: drugList[j]["name"] })
           .toArray();
+          console.log("interaction = ", interaction);
+          console.log("drugList[i] = ", drugList[i]);
+          console.log("drugList[j] = ", drugList[j]);
         if (interaction.length !== 0) {
           interactionsList.push(interaction[0]);
         }
@@ -32,9 +35,15 @@ export default async function handler(req, res, next) {
     );
 
 
-    console.log(interactionsList);
+    console.log("interactionsList = ", interactionsList);
+
+    if (interactionsList.length === 0) {
+      return res.status(200).json({interactions: [], message: "No interactions found" });
+    }
 
     return res.status(200).json({ interactions: interactionsList });
+
+
   }
 
   return res.status(400).json({ message: "This route is not defined" });

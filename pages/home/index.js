@@ -1,194 +1,412 @@
-/**
- * v0 by Vercel.
- * @see https://v0.dev/t/t2VTdsUAsHD
- * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
- */
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { Form, Formik, setIn } from "formik";
+import { useEffect, useRef, useState } from "react";
+import { server } from "@/config/index";
+import DrugItem from "@/components/DrugItem";
+import MyTextInput from "@/components/MyTextInput";
+import InteractionTable from "@/components/InterationTable";
+import MyLoader from "@/components/MyLoader";
+import styles from "@/styles/Header.module.css";
 
-export default function Component() {
+import Link from "next/link";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/input";
+import DrugListTable from "@/components/DrugList";
+
+// import {
+//   Table,
+//   TableRow,
+//   TableHead,
+// } from  "@/components/ui/Table"
+
+const INTERACTION_EXAMPLE = [
+  { id: 1, name: "Aluminum hydroxide" },
+  { id: 2, name: "Dolutegravir" },
+  { id: 3, name: "Aprepitant" },
+  { id: 4, name: "Abacavir" },
+  { id: 5, name: "Orlistat" },
+  { id: 6, name: "Dexamethasone" },
+];
+
+export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="sticky top-0 z-30 border-b bg-background">
-        <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="#" className="flex items-center gap-2 no-underline text-primary" prefetch={false}>
-            <PillIcon className="h-6 w-6 text-primary" />
-            <span className="text-lg font-semibold ">Drug Interaction Checker</span>
+    <>
+      {/* <main className="col container mb-5 mt-3">
+       <div className="row text-center">
+        <h2 className={styles.myheading}>My Drug List</h2>
+      </div>
+
+      <div className="row justify-content-md-center my-3">
+        <div className="card border-secondary">
+          <div className="card-body">
+           
+          </div>
+        </div>
+      </div>
+
+      <ul className="list-group row">
+        {drugList.map((drug) => (
+          <DrugItem key={drug.id} drug={drug} onClick={onDeleteHandler} />
+        ))}
+      </ul>
+
+      <div className="d-flex justify-content-center my-3">
+        <Button className="btn btn-primary px-3" onClick={submitList}>
+          Check Interactions
+          
+        </Button>
+      </div> */}
+
+      <MyComponent />
+    </>
+  );
+}
+
+function MyComponent() {
+  const [id, setId] = useState(0);
+  const [drugList, setDrugList] = useState([]);
+
+  const [interactionTable, setInteractionTable] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [searchResults, setSearchResults] = useState([]);
+
+  const [drugName, setDrugName] = useState("");
+
+  const PopOverRef = useRef(null);
+
+  const fetchDrugName = async (drugName) => {
+    try {
+      const result = await fetch(`${server}/api/getSimilarDrugs`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          drugName: drugName,
+        }),
+      });
+
+      const res = await result.json();
+      console.log("Similar Drugs: ", res.similarDrugs[0].similarDrugs);
+      setSearchResults(res.similarDrugs[0].similarDrugs);
+      PopOverRef.current.click();
+    } catch (error) {
+      console.log("Error occured: ", error);
+    }
+  };
+
+  const submitList = async () => {
+    setIsLoading(true);
+
+    // To api call
+    try {
+      // console.log("Server: ", server);
+      // console.log("Drug List: ", drugList);
+      // remove duplicates or empty strings from drugList
+      const uniqueDrugs = drugList.filter(
+        (drug, index, self) =>
+          index === self.findIndex((t) => t.name === drug.name)
+      );
+
+      const result = await fetch(`${server}/api/getInteraction`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          drugList: uniqueDrugs,
+        }),
+      });
+
+      const res = await result.json();
+      const interactions = res.interactions;
+
+      if (interactions.length === 0) {
+        console.log("No interactions found");
+        setIsLoading(false);
+        setInteractionTable([
+          {
+            Drug_A: "No interactions found",
+            Drug_B: "",
+            Level: "",
+            Description: "",
+          },
+        ]);
+        return;
+      }
+
+      // set Table
+      setInteractionTable(interactions);
+
+      console.log("Interactions: ", interactions);
+    } catch (error) {
+      console.log("Error occured: ", error);
+    }
+
+    setIsLoading(false);
+  };
+
+  const onDeleteHandler = (id) => {
+    setDrugList(drugList.filter((drug) => drug.id !== id));
+  };
+
+  const addDrugHandler = (values) => {
+    const drugObj = { id: id, name: values.name };
+    const newDrugList = drugList.concat(drugObj);
+
+    setId(id + 1);
+    setDrugList(newDrugList);
+  };
+
+  const handleResetClick = () => {
+    setDrugList([]);
+  };
+
+  const handleLoadExampleClick = () => {
+    setDrugList(INTERACTION_EXAMPLE);
+  };
+
+  const fetchSimilarDrugs = (e, drugName) => {
+    e.preventDefault();
+    setDrugName(drugName);
+    console.log("Searching for drug name");
+    if (drugName.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    fetchDrugName(drugName);
+  };
+
+  // keep the druglist unique, remove duplicates, empty strings etc
+  useEffect(() => {
+    const uniqueDrugs = drugList.filter(
+      (drug, index, self) =>
+        index === self.findIndex((t) => t.name === drug.name && t.name !== "")
+    );
+    if (JSON.stringify(uniqueDrugs) !== JSON.stringify(drugList)) {
+      setDrugList(uniqueDrugs);
+    }
+  }, [drugList]);
+
+  return (
+    <div className="bg-background text-foreground min-h-screen flex flex-col">
+      <header className="bg-slate-100/20 text-foreground py-4 px-6 shadow">
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <PillIcon className="w-6 h-6" />
+            <h1 className="text-2xl font-bold">
+            Medication Interaction Checker
+            </h1>
+          </div>
+          <Link href="#" className="text-sm hover:underline" prefetch={false}>
+            About
           </Link>
-          <nav className="hidden space-x-4 md:flex">
-            <Link
-              href="#"
-              className="rounded-md no-underline px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground"
-              prefetch={false}
-            >
-              Check Interactions
-            </Link>
-            <Link
-              href="#"
-              className="rounded-md no-underline px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground"
-              prefetch={false}
-            >
-              About
-            </Link>
-            <Link
-              href="#"
-              className="rounded-md no-underline px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground"
-              prefetch={false}
-            >
-              Resources
-            </Link>
-            <Link
-              href="#"
-              className="rounded-md no-underline px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground"
-              prefetch={false}
-            >
-              Contact
-            </Link>
-          </nav>
-          <Button variant="outline" size="sm" className="md:hidden">
-            <MenuIcon className="h-5 w-5" />
-            <span className="sr-only">Toggle menu</span>
-          </Button>
         </div>
       </header>
-      <main className="flex-1">
-        <section className="bg-background py-20">
-          <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 items-center">
-              <div>
-                <h1 className="text-4xl font-bold text-foreground">Avoid Dangerous Drug Interactions</h1>
-                <p className="mt-4 text-lg text-muted-foreground">
-                  Our drug interaction checker helps you identify potential interactions between your medications,
-                  ensuring your safety and well-being.
-                </p>
-                <Button variant="outline" size="lg" className="mt-8 ">
-                  Check for Interactions
-                </Button>
-              </div>
-              <div className="flex justify-center">
-                <img
-                  src="https://img.freepik.com/free-vector/tiny-pharmacists-with-prescription-drugs-patients-pharmaceutical-industry-rx-symbol-bottle-painkillers-flat-vector-illustration-pharmacy-medicine-health-concept-banner_74855-25358.jpg?t=st=1723022797~exp=1723026397~hmac=0357c198236e1a6cd2e50e6800948b260857e3cc01d9b22b0670165aee0f4d4c&w=1800"
-                  alt="Drug Interaction Checker"
-                  width={500}
-                  height={400}
-                  className="max-w-full"
-                  style={{ aspectRatio: "400/400", objectFit: "contain",  }}
+      <main className="flex-1 container mx-auto py-12 px-4 md:px-6">
+        <div className="grid md:grid-cols-2 gap-8 items-start">
+          <div className="bg-card rounded-lg shadow p-6 md:p-8 h-full relative">
+            <h2 className="text-2xl font-bold mb-4">Check for Interactions</h2>
+            <Formik initialValues={{ name: "" }} onSubmit={addDrugHandler}>
+              <Form>
+                <Input
+                  label="Drug Name"
+                  name="name"
+                  type="text"
+                  placeholder="Enter Drug Name"
+                  className="p-4"
+                  // onchange search for drug name in database
+                  value={drugName}
+                  onChange={(e) => {
+                    fetchSimilarDrugs(e, e.target.value);
+                  }}
                 />
+
+                {/* Popover */}
+                <div
+                  className="popover relative bg-gray-800 w-full"
+                  ref={PopOverRef}
+                >
+                  <div className="popover-content">
+                    <ul className="list-group absolute bg-[#252528] w-full">
+                      {drugName &&
+                        searchResults.map((drug, index) => (
+                          <li
+                            key={index}
+                            className="list-group-item border-b-2 border-gray-700 cursor-pointer p-1 pl-2 hover:bg-gray-700"
+                            onClick={() => {
+                              PopOverRef.current.click();
+                              addDrugHandler({ name: drug });
+                              setDrugName("");
+                            }}
+                          >
+                            {drug}
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* <Table>
+                  <TableHead>
+                    <TableRow>
+                      <th>Similar Drugs</th>
+                    </TableRow>
+                  </TableHead>
+                </Table> */}
+
+                <div className="col-12  mt-4 pl-1 pr-1 flex items-center justify-evenly gap-2">
+                  <Button type="submit" className="btn btn-primary w-full">
+                    Add Drug
+                  </Button>
+                  <Button
+                    type="Button"
+                    className="btn btn-primary mx-2 w-full"
+                    onClick={handleResetClick}
+                    variant="outline"
+                  >
+                    Reset List
+                  </Button>
+                  <Button
+                    type="Button"
+                    className="btn btn-primary w-full"
+                    variant="secondary"
+                    onClick={handleLoadExampleClick}
+                  >
+                    Load Example
+                  </Button>
+                </div>
+                <div className="absolute bottom-0 left-0 p-4 w-full">
+                  <Button
+                    type="submit"
+                    className="btn btn-primary w-full"
+                    onClick={submitList}
+                  >
+                    Check Interactions
+                  </Button>
+                </div>
+
+                <div className="mt-4">
+                  <span className="mt-4 text-xs text-primary/80 p-1 text-justify">
+                    - Try searching for a drug name and select from the list of
+                    similar drugs.
+                  </span>
+                  <br />
+                  <span className="text-xs text-primary/80 p-1 text-justify">
+                    - Or load an example list of drugs.
+                  </span>
+                </div>
+              </Form>
+            </Formik>
+          </div>
+          <div className="bg-card rounded-lg shadow p-6 md:p-8">
+            <h2 className="text-2xl font-bold mb-4">Potential Interactions</h2>
+            <div className="grid gap-4 gap-y-6">
+              <div className="flex items-start gap-4">
+                <div className="rounded-full bg-red-500 text-yellow-50 w-10 h-10 flex items-center justify-center">
+                  <TriangleAlertIcon className="w-5 h-5" />
+                </div>
+                <div className="w-[85%]">
+                  <h3 className="font-semibold">Medication A + Medication B</h3>
+                  <p className="text-muted-foreground ">
+                    Severe interaction: May cause serious adverse effects. Avoid
+                    concomitant use.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="rounded-full bg-yellow-500 text-yellow-50 w-10 h-10 flex items-center justify-center">
+                  <TriangleAlertIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Medication C + Medication D</h3>
+                  <p className="text-muted-foreground">
+                    Moderate interaction: Monitor closely and adjust dosages if
+                    necessary.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="rounded-full bg-green-500 text-green-50 w-10 h-10 flex items-center justify-center">
+                  <CheckIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Medication E + Medication F</h3>
+                  <p className="text-muted-foreground">
+                    No significant interaction expected.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </section>
-        <section className="py-16">
-          <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold">How It Works</h2>
-            <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-3">
-              <div className="flex flex-col items-center">
-                <SearchIcon className="h-12 w-12 text-primary" />
-                <h3 className="mt-4 text-xl font-semibold">Search Medications</h3>
-                <p className="mt-2 text-center text-muted-foreground">
-                  Enter the medications you're taking, and our system will check for potential interactions.
-                </p>
-              </div>
-              <div className="flex flex-col items-center">
-                <InfoIcon className="h-12 w-12 text-primary" />
-                <h3 className="mt-4 text-xl font-semibold">Get Detailed Information</h3>
-                <p className="mt-2 text-center text-muted-foreground">
-                  Receive detailed information about the severity and potential consequences of any identified
-                  interactions.
-                </p>
-              </div>
-              <div className="flex flex-col items-center">
-                <FileWarningIcon className="h-12 w-12 text-primary" />
-                <h3 className="mt-4 text-xl font-semibold">Stay Safe</h3>
-                <p className="mt-2 text-center text-muted-foreground">
-                  Use our recommendations to make informed decisions about your medication regimen and avoid dangerous
-                  interactions.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-        <section className="bg-muted py-16">
-          <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold">Featured Resources</h2>
-            <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="relative">
-                <CardHeader>
-                  <CardTitle>Understanding Drug Interactions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Learn about the different types of drug interactions and how to identify them.
-                  </p>
-                </CardContent>
-                <CardFooter className="pt-6">
-                <Link href="#" className="text-primary underline absolute bottom-4 pt-4" prefetch={false}>
-                    Read More
-                  </Link>
-                </CardFooter>
-              </Card>
-              <Card className="relative">
-                <CardHeader>
-                  <CardTitle>Medication Safety Tips</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Discover practical tips to ensure the safe use of your medications.
-                  </p>
-                </CardContent>
-                <CardFooter className="pt-6">
-                <Link href="#" className="text-primary underline absolute bottom-4 pt-4" prefetch={false}>
-                    Read More
-                  </Link>
-                </CardFooter>
-              </Card>
-              <Card className="relative">
-                <CardHeader>
-                  <CardTitle>Frequently Asked Questions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Get answers to common questions about drug interactions and medication safety.
-                  </p>
-                </CardContent>
-                <CardFooter className="pt-6">
-                  <Link href="#" className="text-primary underline absolute bottom-4 pt-4" prefetch={false}>
-                    Read More
-                  </Link>
-                </CardFooter>
-              </Card>
-            </div>
-          </div>
-        </section>
+        </div>
       </main>
-      <footer className="bg-background py-8">
-        <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <div className="flex items-center gap-2">
-              <PillIcon className="h-6 w-6 text-primary" />
-              <span className="text-lg font-semibold">Drug Interaction Checker</span>
-            </div>
-            <div className="flex gap-4">
-              <Link href="#" className="text-muted-foreground hover:text-foreground" prefetch={false}>
-                Privacy Policy
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground" prefetch={false}>
-                Terms of Service
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground" prefetch={false}>
-                Contact Us
-              </Link>
-            </div>
+
+      <main className="flex-1 container mx-auto mt-0 pt-0 py-12 px-4 md:px-6">
+        {drugList && drugList.length !== 0 && (
+          <>
+            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight m-6 mt-16">
+              Drug List
+              <hr className="border-1.5 border-primary w-1/3 mt-2" />
+            </h3>
+
+            <DrugListTable
+              drugList={drugList}
+              onDeleteHandler={onDeleteHandler}
+            />
+          </>
+        )}
+        <div className="d-flex justify-content-center">
+          {isLoading && <MyLoader />}
+        </div>
+
+        {!isLoading && interactionTable.length !== 0 && (
+          <>
+            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight m-6 mt-16">
+              Drug Interactions
+              <hr className="border-1.5 border-primary w-1/3 mt-2" />
+            </h3>
+            <InteractionTable interactionTable={interactionTable} />
+          </>
+        )}
+
+        {!isLoading && interactionTable.length !== 0 && (
+          <blockquote className="mt-6 border-l-2 pl-6 italic">
+            <p className=" text-sm ">
+              *Note:{" "}
+              <span className="font-semibold underline underline-offset-4 text-muted-foreground">
+                Unknown interaction means there might be an interaction between
+                the drugs but with unknown severity.
+              </span>
+            </p>
+          </blockquote>
+        )}
+      </main>
+
+      <footer className="bg-muted text-muted-foreground py-4 px-6 text-sm">
+        <div className="container mx-auto flex items-center justify-between">
+          <p>
+            &copy; 2023 Medication Interaction Checker. All rights reserved.
+          </p>
+          <div className="flex items-center gap-4">
+            <Link href="#" className="hover:underline" prefetch={false}>
+              Privacy Policy
+            </Link>
+            <Link href="#" className="hover:underline" prefetch={false}>
+              Terms of Service
+            </Link>
           </div>
         </div>
       </footer>
     </div>
-  )
+  );
 }
 
-function FileWarningIcon(props) {
+function CheckIcon(props) {
   return (
     <svg
       {...props}
@@ -202,57 +420,10 @@ function FileWarningIcon(props) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-      <path d="M12 9v4" />
-      <path d="M12 17h.01" />
+      <path d="M20 6 9 17l-5-5" />
     </svg>
-  )
+  );
 }
-
-
-function InfoIcon(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 16v-4" />
-      <path d="M12 8h.01" />
-    </svg>
-  )
-}
-
-
-function MenuIcon(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="4" x2="20" y1="12" y2="12" />
-      <line x1="4" x2="20" y1="6" y2="6" />
-      <line x1="4" x2="20" y1="18" y2="18" />
-    </svg>
-  )
-}
-
 
 function PillIcon(props) {
   return (
@@ -271,11 +442,10 @@ function PillIcon(props) {
       <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" />
       <path d="m8.5 8.5 7 7" />
     </svg>
-  )
+  );
 }
 
-
-function SearchIcon(props) {
+function TriangleAlertIcon(props) {
   return (
     <svg
       {...props}
@@ -289,8 +459,9 @@ function SearchIcon(props) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+      <path d="M12 9v4" />
+      <path d="M12 17h.01" />
     </svg>
-  )
+  );
 }
