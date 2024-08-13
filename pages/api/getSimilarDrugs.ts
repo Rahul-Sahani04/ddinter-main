@@ -1,6 +1,8 @@
 import { connectToDatabase } from "@/lib/mongodb";
 
-export default async function handler(req, res, next) {
+import { NextFunction, Request, Response } from "express";
+
+export default async function handler(req : Request, res : Response, next : NextFunction) {
     if (req.method === "POST") {
         console.log("In POST API ROUTE", req.body);
         const { db } = await connectToDatabase();

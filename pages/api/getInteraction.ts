@@ -1,10 +1,12 @@
 import { connectToDatabase } from "@/lib/mongodb";
 
-export default async function handler(req, res, next) {
+import { NextFunction, Request, Response } from "express";
+
+export default async function POST(req : Request, res : Response, next : NextFunction) {
   if (req.method === "POST") {
     console.log("In POST API ROUTE");
     const { db } = await connectToDatabase();
-    const drugList = req.body.drugList;
+    const drugList = req.body.drugList || [];
     // console.log("drugList = ", drugList);
 
     const interactionsList = [];
