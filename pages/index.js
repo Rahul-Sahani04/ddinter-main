@@ -8,6 +8,8 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 
+
+
 export default function Component() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -70,8 +72,8 @@ export default function Component() {
                 </Link>
               </div>
               <div className="flex justify-center">
-                <img
-                  src="https://img.freepik.com/free-vector/tiny-pharmacists-with-prescription-drugs-patients-pharmaceutical-industry-rx-symbol-bottle-painkillers-flat-vector-illustration-pharmacy-medicine-health-concept-banner_74855-25358.jpg?t=st=1723022797~exp=1723026397~hmac=0357c198236e1a6cd2e50e6800948b260857e3cc01d9b22b0670165aee0f4d4c&w=1800"
+                <Image
+                  src={"/assets/illustration.png"}
                   alt="Drug Interaction Checker"
                   width={500}
                   height={400}
