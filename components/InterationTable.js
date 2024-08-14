@@ -13,7 +13,7 @@ import {
 
 const InteractionTable = ({ interactionTable }) => {
   return (
-    <Table className="table">
+    <Table className="table" >
     <TableCaption>Table: Drug Interactions</TableCaption>
       <TableHeader>
         <TableRow>

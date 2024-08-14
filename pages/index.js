@@ -126,7 +126,7 @@ export default function Component() {
                   </p>
                 </CardContent>
                 <CardFooter className="pt-6">
-                <Link href="#" className="text-primary underline absolute bottom-4 pt-4" prefetch={false}>
+                <Link href="https://www.sps.nhs.uk/articles/understanding-drug-interactions/#:~:text=Drug%20interactions%20occur%20when%20the,pharmacodynamic%20interactions%20and%20pharmacokinetic%20interactions." className="text-primary underline absolute bottom-4 pt-4" prefetch={false} target="_blank" rel="noopener noreferrer">
                     Read More
                   </Link>
                 </CardFooter>
@@ -141,7 +141,7 @@ export default function Component() {
                   </p>
                 </CardContent>
                 <CardFooter className="pt-6">
-                <Link href="#" className="text-primary underline absolute bottom-4 pt-4" prefetch={false}>
+                <Link href="https://www.google.com/search?client=opera-gx&q=Medication+Safety+Tips&sourceid=opera&ie=UTF-8&oe=UTF-8" className="text-primary underline absolute bottom-4 pt-4" prefetch={false} target="_blank" rel="noopener noreferrer">
                     Read More
                   </Link>
                 </CardFooter>
@@ -156,7 +156,7 @@ export default function Component() {
                   </p>
                 </CardContent>
                 <CardFooter className="pt-6">
-                  <Link href="#" className="text-primary underline absolute bottom-4 pt-4" prefetch={false}>
+                  <Link href="https://www.fda.gov/drugs/resources-drugs/drug-interactions-what-you-should-know" className="text-primary underline absolute bottom-4 pt-4" prefetch={false} target="_blank" rel="noopener noreferrer">
                     Read More
                   </Link>
                 </CardFooter>

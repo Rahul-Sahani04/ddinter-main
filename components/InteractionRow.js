@@ -23,10 +23,10 @@ const InteractionRow = ({ ind, interaction }) => {
   // Unknown: #f8f9fa
 
   const hexColorMapping = {
-    Major: "#dc3545",
-    Moderate: "#ffc107",
-    Minor: "#28a745",
-    Unknown: "#f8f9fa",
+    Major: "#dc3545CC",
+    Moderate: "#ffc107CC",
+    Minor: "#28a745CC",
+    Unknown: "#f8f9faCC",
   };
 
   return (
@@ -35,7 +35,9 @@ const InteractionRow = ({ ind, interaction }) => {
       <TableCell>{interaction.Drug_A}</TableCell>
       <TableCell>{interaction.Drug_B}</TableCell>
       {/* <TableCell>{interaction.Level}</TableCell> */}
-      <TableCell className={`bg-[${hexColorMapping[interaction.Level]}]/60 ${interaction.Level === "Unknown" || interaction.Level === "Moderate" ? "text-black" : ""}`}>{interaction.Level}</TableCell>
+      <TableCell style={{ backgroundColor: hexColorMapping[interaction.Level]  }}
+      
+       className={` ${interaction.Level === "Unknown" || interaction.Level === "Moderate" ? "text-black" : ""}`}>{interaction.Level}</TableCell>
     </TableRow>
   );
 };

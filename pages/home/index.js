@@ -75,6 +75,8 @@ function MyComponent() {
   const [drugName, setDrugName] = useState("");
 
   const PopOverRef = useRef(null);
+  
+  const drugInteractionTable = useRef(null);
 
   const fetchDrugName = async (drugName) => {
     try {
@@ -136,7 +138,22 @@ function MyComponent() {
             Description: "",
           },
         ]);
+
+        
+        
         return;
+      }
+
+      console.log("drugInteractionTable: ", drugInteractionTable);
+      if (drugInteractionTable.current){
+        // scroll to the interaction table
+        drugInteractionTable.current.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+          inline: "nearest",
+        });
+      } else {
+        console.log("drugInteractionTable is null");
       }
 
       // set Table
@@ -360,7 +377,7 @@ function MyComponent() {
             />
           </>
         )}
-        <div className="d-flex justify-content-center">
+        <div className="w-full flex justify-center">
           {isLoading && <MyLoader />}
         </div>
 
@@ -373,6 +390,7 @@ function MyComponent() {
             <InteractionTable interactionTable={interactionTable} />
           </>
         )}
+        <span ref={drugInteractionTable} ></span>
 
         {!isLoading && interactionTable.length !== 0 && (
           <blockquote className="mt-6 border-l-2 pl-6 italic">
