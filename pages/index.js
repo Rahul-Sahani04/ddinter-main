@@ -28,26 +28,26 @@ export default function Component() {
               Check Interactions
             </Link>
             <Link
-              href="#"
+              href="/"
               className="rounded-md no-underline px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground"
               prefetch={false}
             >
               About
             </Link>
             <Link
-              href="#"
+              href="#resources"
               className="rounded-md no-underline px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground"
               prefetch={false}
             >
               Resources
             </Link>
-            <Link
+            {/* <Link
               href="#"
               className="rounded-md no-underline px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground"
               prefetch={false}
             >
               Contact
-            </Link>
+            </Link> */}
           </nav>
           <Button variant="outline" size="sm" className="md:hidden">
             <MenuIcon className="h-5 w-5" />
@@ -116,7 +116,7 @@ export default function Component() {
         </section>
         <section className="bg-muted py-16">
           <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold">Featured Resources</h2>
+            <h2 className="text-3xl font-bold" id="resources">Featured Resources</h2>
             <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             <Card className="relative">
                 <CardHeader>
@@ -181,9 +181,9 @@ export default function Component() {
               <Link href="#" className="text-muted-foreground hover:text-foreground" prefetch={false}>
                 Terms of Service
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground" prefetch={false}>
+              {/* <Link href="#" className="text-muted-foreground hover:text-foreground" prefetch={false}>
                 Contact Us
-              </Link>
+              </Link> */}
             </div>
           </div>
         </div>
